@@ -4,12 +4,14 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -20,6 +22,13 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
+        'avatar_url',
+        'ktp_image_url',
+        'ktp_nik',
+        'role',          // 'admin', 'user'
+        'kyc_status',    // 'pending', 'verified', 'rejected', 'none'
+        'is_verified',
     ];
 
     /**
@@ -42,6 +51,21 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_verified' => 'boolean',
         ];
+    }
+
+    // --- RELATIONSHIPS ---
+
+    // User sebagai Lender (Punya banyak barang)
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    // User sebagai Renter (Punya banyak sewaan)
+    public function rentals(): HasMany
+    {
+        return $this->hasMany(Rental::class);
     }
 }
