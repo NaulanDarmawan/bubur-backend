@@ -1,26 +1,39 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('phone')->nullable(); // Critical for rental contact
+
+            // Assets
+            $table->string('avatar_url')->nullable();
+
+            // KYC Data
+            $table->string('ktp_image_url')->nullable()->comment('Uploaded via App, Verified via Web Admin');
+            $table->string('ktp_nik')->nullable();
+
+            // Roles & Status
+            $table->enum('role', ['admin', 'user'])->default('user');
+            $table->enum('kyc_status', ['pending', 'verified', 'rejected', 'none'])->default('none');
+            $table->boolean('is_verified')->default(false);
+
             $table->rememberToken();
             $table->timestamps();
         });
 
+        // Optional: Password Reset Tokens & Sessions (Default Laravel 11 structure)
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
@@ -37,13 +50,10 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
     }
 };
