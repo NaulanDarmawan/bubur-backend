@@ -1,8 +1,9 @@
 <?php
 
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\ProductController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\RentalController;
+use App\Http\Controllers\Api\ProductController;
 
 // Public Routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -21,4 +22,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/products', [ProductController::class, 'store']);
     Route::put('/products/{id}', [ProductController::class, 'update']);
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+
+    // Rental / Booking System
+    Route::post('/rentals', [RentalController::class, 'store']); // Checkout
+    Route::get('/rentals', [RentalController::class, 'index']);      // History Saya (Renter)
+    Route::get('/rentals/{id}', [RentalController::class, 'show']);  // Detail Transaksi
+
+    // Lender Dashboard
+    Route::get('/lender/orders', [RentalController::class, 'lenderOrders']); // Pesanan Masuk
 });
