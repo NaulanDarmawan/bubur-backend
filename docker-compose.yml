@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # 1. Aplikasi Utama (Laravel)
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: bubur-app
+    container_name: bubur-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - bubur-network
+
+  # 2. Web Server (Nginx)
+  webserver:
+    image: nginx:alpine
+    container_name: bubur-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - bubur-network
+    depends_on:
+      - app
+
+  # 3. Database (MySQL)
+  db:
+    image: mysql:8.0
+    container_name: bubur-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - bubur-network
+
+  # 4. Cache (Redis) -> Requestmu terpenuhi di sini
+  redis:
+    image: redis:alpine
+    container_name: bubur-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - bubur-network
+
+# Network agar mereka bisa saling panggil
+networks:
+  bubur-network:
+    driver: bridge
+
+# Volume agar data database gak ilang pas container mati
+volumes:
+  dbdata:
+    driver: local
