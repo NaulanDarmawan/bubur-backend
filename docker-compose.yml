@@ -47,6 +47,19 @@ services:
     networks:
       - bubur-network
 
+  phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        links:
+            - db
+        environment:
+            PMA_HOST: db
+            PMA_PORT: 3306
+            PMA_ARBITRARY: 1
+        ports:
+            - '8081:80'  # Kita pakai port 8081 agar tidak bentrok
+        networks:
+            - bubur-network
+
   # 4. Cache (Redis) -> Requestmu terpenuhi di sini
   redis:
     image: redis:alpine

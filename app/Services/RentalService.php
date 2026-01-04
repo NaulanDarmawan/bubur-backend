@@ -127,4 +127,58 @@ class RentalService
 
         return $remainingStock >= $qty;
     }
+
+    /**
+     * Proses Pengembalian Barang (Scan QR Result)
+     */
+    public function returnRental(int $rentalId, int $lenderId): Rental
+    {
+        // 1. Validasi: Pastikan yang memproses return adalah Pemilik Barang (Lender)
+        $rental = Rental::with('product')->where('id', $rentalId)->firstOrFail();
+
+        if ($rental->product->user_id !== $lenderId) {
+            throw ValidationException::withMessages([
+                'id' => ['Anda tidak berhak memproses pengembalian barang ini.'],
+            ]);
+        }
+
+        if ($rental->status !== 'active') { // Hanya barang status 'active' yang bisa dikembalikan
+             throw ValidationException::withMessages([
+                'status' => ['Barang ini belum diambil atau sudah dikembalikan.'],
+            ]);
+        }
+
+        // 2. Hitung Denda (Logic Standard: 1 Hari Telat = 1x Harga Sewa Harian)
+        $actualReturnDate = now();
+        $scheduleEndDate = Carbon::parse($rental->end_date)->endOfDay(); // Toleransi sampai jam 23:59
+
+        $fineTotal = 0;
+        $fineNotes = null;
+        $fineStatus = null;
+
+        // Cek apakah tanggal kembali > jadwal selesai?
+        if ($actualReturnDate->gt($scheduleEndDate)) {
+            // Hitung selisih dalam float (misal 1.5 hari), lalu absolutekan, lalu bulatkan ke atas
+            // Contoh: Telat 2 jam = 0.1 hari -> Dibulatkan jadi 1 hari denda
+            $lateDays = (int) ceil(abs($scheduleEndDate->floatDiffInDays($actualReturnDate)));
+
+            // Jaga-jaga jika hasilnya 0 (misal telat hitungan detik), tetap set 1
+            if ($lateDays < 1) $lateDays = 1;
+
+            $fineTotal = $lateDays * $rental->product->price_per_day * $rental->quantity;
+            $fineNotes = "Terlambat $lateDays hari. Denda Rp " . number_format($fineTotal, 0, ',', '.');
+            $fineStatus = 'unpaid';
+        }
+
+        // 3. Update Transaksi
+        $rental->update([
+            'status' => 'completed', // Sewa selesai (Jika ada denda, user bayar terpisah nanti)
+            'actual_return_date' => $actualReturnDate,
+            'fine_total' => $fineTotal,
+            'fine_notes' => $fineNotes,
+            'fine_status' => $fineStatus,
+        ]);
+
+        return $rental;
+    }
 }

@@ -66,4 +66,15 @@ class RentalController extends Controller
             'data' => new RentalResource($rental),
         ]);
     }
+
+    // POST /api/rentals/{id}/return (Lender Only - Scan QR)
+    public function returnProduct(Request $request, string $id): JsonResponse
+    {
+        $rental = $this->rentalService->returnRental((int) $id, (int) $request->user()->id);
+
+        return response()->json([
+            'message' => 'Barang berhasil dikembalikan.',
+            'data' => new RentalResource($rental),
+        ]);
+    }
 }

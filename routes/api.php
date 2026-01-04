@@ -33,4 +33,5 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Lender Dashboard
     Route::get('/lender/orders', [RentalController::class, 'lenderOrders']); // Pesanan Masuk
+    Route::post('/rentals/{id}/return', [RentalController::class, 'returnProduct']); // Endpoint Return
 });
