@@ -66,4 +66,43 @@ class AuthController extends Controller
             'data' => $request->user(),
         ]);
     }
+
+    // POST /api/kyc
+    public function uploadKyc(Request $request)
+    {
+        // 1. Validasi Input
+        $request->validate([
+            'ktp_nik' => 'required|numeric|digits:16', // Wajib 16 angka
+            'ktp_image' => 'required|image|mimes:jpeg,png,jpg', // Max 3MB
+        ]);
+
+        $user = $request->user();
+
+        // Cek apakah sudah verified? Kalau sudah, jangan upload lagi
+        if ($user->kyc_status === 'verified') {
+            return response()->json(['message' => 'Akun Anda sudah terverifikasi.'], 400);
+        }
+
+        // 2. Upload File
+        if ($request->hasFile('ktp_image')) {
+            // Simpan ke folder 'storage/app/public/kyc'
+            $path = $request->file('ktp_image')->store('kyc', 'public');
+
+            // Dapatkan URL publiknya
+            // Pastikan Anda sudah jalankan: php artisan storage:link
+            $url = asset('storage/' . $path);
+
+            // 3. Update Database
+            $user->update([
+                'ktp_nik' => $request->ktp_nik,
+                'ktp_image_url' => 'storage/' . $path, // Simpan path relatif atau full URL
+                'kyc_status' => 'pending', // Ubah status jadi pending biar muncul di admin
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'KTP berhasil diupload. Mohon tunggu verifikasi Admin.',
+            'data' => $user,
+        ]);
+    }
 }

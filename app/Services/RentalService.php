@@ -14,6 +14,15 @@ class RentalService
 {
     public function createRental(array $data, int $userId): Rental
     {
+        $user = \App\Models\User::findOrFail($userId);
+
+        // Hanya user 'verified' yang boleh lewat
+        if ($user->kyc_status !== 'verified') {
+            throw ValidationException::withMessages([
+                'kyc_status' => ['Akun Anda belum terverifikasi. Silakan upload KTP dan tunggu persetujuan Admin sebelum menyewa.'],
+            ]);
+        }
+        
         $product = Product::findOrFail($data['product_id']);
         $startDate = Carbon::parse($data['start_date']);
         $endDate = Carbon::parse($data['end_date']);
