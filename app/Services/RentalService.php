@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Rental;
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
+use App\Services\PaymentService;
 
 class RentalService
 {
@@ -37,17 +38,26 @@ class RentalService
         $durationInDays = $startDate->diffInDays($endDate) + 1;
         $totalPrice = $product->price_per_day * $durationInDays * $requestedQty;
 
+        // DB Transaction Start (Disarankan pakai DB::transaction)
         // 4. Buat Transaksi
-        return Rental::create([
+        $rental = Rental::create([
             'user_id' => $userId,
             'product_id' => $product->id,
             'quantity' => $requestedQty,
             'start_date' => $startDate->format('Y-m-d'),
             'end_date' => $endDate->format('Y-m-d'),
-            'status' => 'pending', // Menunggu pembayaran
+            'status' => 'pending',
             'total_price' => $totalPrice,
-            // Field lain null dulu (denda, return date, dll)
         ]);
+
+        // 5. Generate Midtrans Snap Token
+        // Kita instansiasi PaymentService (atau bisa via dependency injection di constructor)
+        $paymentService = new PaymentService();
+        $snapToken = $paymentService->createSnapToken($rental->load(['product', 'renter']));
+
+        // 6. Simpan Token ke Database
+        $rental->update(['snap_token' => $snapToken]);
+        return $rental;
     }
 
     /**

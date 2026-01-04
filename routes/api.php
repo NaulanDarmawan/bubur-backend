@@ -9,6 +9,9 @@ use App\Http\Controllers\Api\ProductController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+// MIDTRANS CALLBACK (Webhook)
+Route::post('/midtrans-callback', [\App\Http\Controllers\Api\CallbackController::class, 'midtransWebhook']);
+
 // Homepage / Search tidak butuh login
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{slug}', [ProductController::class, 'show']);
