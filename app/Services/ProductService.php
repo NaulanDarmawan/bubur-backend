@@ -28,7 +28,8 @@ class ProductService
             $query->where('name', 'like', '%' . $filters['search'] . '%');
         }
 
-        return $query->latest()->paginate(10);
+        // return $query->latest()->paginate(10);
+        return $query->latest()->get();
     }
 
     /**
@@ -93,7 +94,7 @@ class ProductService
             return $product->refresh()->load('images');
         });
     }
-    
+
     /**
      * Hapus Produk beserta File Gambar fisiknya
      */

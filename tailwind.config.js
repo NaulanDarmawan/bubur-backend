@@ -17,11 +17,11 @@ export default {
             // TAMBAHAN: Palet Warna Bubur
             colors: {
                 bubur: {
-                    primary: '#EF7722',   // Oranye Utama
-                    secondary: '#FAA533', // Oranye Muda
-                    accent: '#0BA6DF',    // Biru Langit
-                    light: '#EBEBEB',     // Abu-abu Terang
-                    dark: '#1F2937',      // Abu-abu Gelap (Text)
+                    primary: '#EF7722',
+                    secondary: '#FAA533',
+                    accent: '#0BA6DF',
+                    light: '#EBEBEB',
+                    dark: '#1F2937',
                 }
             }
         },

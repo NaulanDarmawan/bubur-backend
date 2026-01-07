@@ -21,6 +21,11 @@ class RentalResource extends JsonResource
             'duration_days' => $this->start_date->diffInDays($this->end_date) + 1,
             'is_overdue' => $this->status === 'active' && now()->gt($this->end_date),
 
+            'snap_token' => $this->snap_token,
+            'fine_total' => (float) $this->fine_total,
+            'fine_status' => $this->fine_status,
+            'actual_return_date' => $this->actual_return_date,
+
             // Relasi Produk (Barang apa yang disewa?)
             'product' => [
                 'id' => $this->product->id,

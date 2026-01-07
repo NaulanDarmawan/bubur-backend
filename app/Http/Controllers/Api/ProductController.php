@@ -30,7 +30,7 @@ class ProductController extends Controller
 
         return response()->json([
             'message' => 'List produk berhasil diambil',
-            'data' => ProductResource::collection($products)->response()->getData(true),
+            'data' => ProductResource::collection($products)->resolve(),
         ]);
     }
 
