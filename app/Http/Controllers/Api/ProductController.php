@@ -25,7 +25,7 @@ class ProductController extends Controller
     // GET /api/products (Public)
     public function index(Request $request): JsonResponse
     {
-        $filters = $request->only(['category', 'search']);
+        $filters = $request->only(['category', 'search', 'lender_id']);
         $products = $this->productService->getProducts($filters);
 
         return response()->json([

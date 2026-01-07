@@ -18,8 +18,21 @@ class ProductService
      */
     public function getProducts(array $filters = [])
     {
-        $query = Product::with(['images', 'lender'])->where('is_available', true);
+        $query = Product::with(['images', 'lender']);
 
+        // 1. LOGIC IS_AVAILABLE
+        // Jika sedang melihat toko sendiri (lender_id ada), tampilkan semua (termasuk yang non-aktif/sewa).
+        // Jika user biasa (homepage), hanya tampilkan yang available.
+        if (empty($filters['lender_id'])) {
+            $query->where('is_available', true);
+        }
+
+        // 2. FILTER LENDER (Punya Saya)
+        if (!empty($filters['lender_id'])) {
+            $query->where('user_id', $filters['lender_id']);
+        }
+
+        // 3. FILTER STANDAR
         if (!empty($filters['category'])) {
             $query->where('category', $filters['category']);
         }
@@ -28,7 +41,6 @@ class ProductService
             $query->where('name', 'like', '%' . $filters['search'] . '%');
         }
 
-        // return $query->latest()->paginate(10);
         return $query->latest()->get();
     }
 

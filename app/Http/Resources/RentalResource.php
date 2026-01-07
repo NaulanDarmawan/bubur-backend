@@ -4,6 +4,8 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\UserResource; 
+use App\Http\Resources\ProductResource;
 
 class RentalResource extends JsonResource
 {
@@ -11,6 +13,7 @@ class RentalResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'user_id' => $this->user_id,
             'status' => $this->status, // pending, paid, active, etc
             'total_price' => (float) $this->total_price,
             'price_format' => 'Rp ' . number_format($this->total_price, 0, ',', '.'),
@@ -26,12 +29,13 @@ class RentalResource extends JsonResource
             'fine_status' => $this->fine_status,
             'actual_return_date' => $this->actual_return_date,
 
+            'user' => new UserResource($this->whenLoaded('user')),
             // Relasi Produk (Barang apa yang disewa?)
             'product' => [
                 'id' => $this->product->id,
                 'name' => $this->product->name,
                 'slug' => $this->product->slug,
-                'image' => $this->product->images->first()->image_url ?? null, // Ambil gambar pertama saja
+                'images' => $this->product->images->map(fn($img) => $img->image_url), // Ambil gambar pertama saja
                 'lender_name' => $this->product->lender->name, // Siapa pemiliknya
             ],
 
